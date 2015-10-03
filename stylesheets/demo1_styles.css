@@ -1,0 +1,38 @@
+.blood 
+{
+    background-repeat: repeat-x;
+    background-size: 185px 69px;
+    background-image: url("images/blood.jpg")
+    height:100px;
+}
+.grid {
+  border: solid 5px #0066FF;
+  border-radius: 13px;
+
+
+}
+
+.grid_row {
+  display: flex;
+}
+
+.grid_item {
+  flex: 1;
+  padding: 12px;
+  border: solid 5px #0066FF;
+  display: flex;
+  justify-content: center; /* align horizontal */
+  align-items: center; /* align vertical */
+  
+}
+
+}
+text {
+  font: 10px sans-serif;
+}
+
+form {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
