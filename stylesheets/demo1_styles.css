@@ -2,7 +2,7 @@
 {
     background-repeat: repeat-x;
     background-size: 185px 69px;
-    background-image: url("images/blood.jpg")
+    background-image: url("/images/blood.jpg");
     height:100px;
 }
 .grid {
