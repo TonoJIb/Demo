@@ -6,8 +6,9 @@
     height:100px;
 }
 .grid {
-  border: solid 5px #0066FF;
+  border: solid 5px #ee3333;
   border-radius: 13px;
+  background: #ffdede;
 
 
 }
@@ -19,20 +20,56 @@
 .grid_item {
   flex: 1;
   padding: 12px;
-  border: solid 5px #0066FF;
+  border: solid 5px #ee3333;
   display: flex;
   justify-content: center; /* align horizontal */
   align-items: center; /* align vertical */
   
 }
 
+
+body {
+  
+  
+  background-image:
+        linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)), 
+        url("/images/bgimage.jpg");
+        background-size: cover;
 }
 text {
-  font: 10px sans-serif;
+  font: 10px serif;
+}
+.redtext {
+  font: serif;
+  color: #ee3333;
+
+}
+h1 {
+  font-size: 40px;
+  text-align: center;
 }
 
 form {
   position: absolute;
   right: 10px;
   top: 10px;
+}
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: #ee3333;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 3px;
 }
