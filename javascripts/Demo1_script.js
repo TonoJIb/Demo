@@ -62,20 +62,16 @@ $( document ).ready(function() {
 	var ctx = c.getContext("2d");
 	var c1 = document.getElementById("DestCanvas");
 	var ctx1 = c1.getContext("2d");
-	
-	im.src="/Demo/images/Lympho.jpg";
-	im.alt="Image not found"; 
-	if (im.width) {} else{
-		im.src='/images/Lympho.jpg';
+	if (document.URL=="http://localhost:8000/"){
+		im.src= "/images/Lympho.jpg";
+	} else {
+		im.src= "/Demo/images/Lympho.jpg";
 	}
-	im.onError = function() {
-	 	im.onerror=null;
-	 	
-	 } 
 	
-	im.onload=function(){
-
-		ctx.drawImage(im,0,0)
+	im.alt="Image not found"; 
+	
+	
+	im.onload=function(){ctx.drawImage(im,0,0);
 		var imgData = ctx.getImageData(0, 0, c.width, c.height);
     	// invert colors
     	var i;
