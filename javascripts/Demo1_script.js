@@ -62,13 +62,13 @@ $( document ).ready(function() {
 	var ctx = c.getContext("2d");
 	var c1 = document.getElementById("DestCanvas");
 	var ctx1 = c1.getContext("2d");
-	
-	im.src="/images/Lympho.jpg";
-	 im.alt="Image not found" 
-	 im.onError = function() {
+	im.onError = function() {
 	 	im.onerror=null;
 	 	im.src='/Demo/images/Lympho.jpg';
 	 } 
+	im.src="/images/Lympho.jpg";
+	im.alt="Image not found" 
+	 
 	im.onload=function(){ctx.drawImage(im,0,0)
 		var imgData = ctx.getImageData(0, 0, c.width, c.height);
     	// invert colors
