@@ -65,7 +65,10 @@ $( document ).ready(function() {
 	
 	im.src="/images/Lympho.jpg";
 	 im.alt="Image not found" 
-	 im.onError="this.onerror=null;this.src='imagefound.gif';" 
+	 im.onError = function() {
+	 	this.onerror=null;
+	 	this.src='imagefound.gif';
+	 } 
 	im.onload=function(){ctx.drawImage(im,0,0)
 		var imgData = ctx.getImageData(0, 0, c.width, c.height);
     	// invert colors
