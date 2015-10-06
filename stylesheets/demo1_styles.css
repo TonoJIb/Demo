@@ -33,7 +33,7 @@ body {
   
   background-image:
         linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)), 
-        url("/images/bgimage.jpg");
+        url("/images/bgimage.jpg"), url("/Demo/images/bgimage.jpg");
         background-size: cover;
 }
 text {
