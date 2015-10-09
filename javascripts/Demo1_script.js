@@ -236,8 +236,8 @@ $( document ).ready(function() {
 				obj={
 					name: tree[node].nodeid,
 					parent: tree[node].parent,
-					color: tree[node].color,
-					size: tree[node].size
+					color: rgbToHex(tree[node].color),
+					size: 40*tree[node].size/tree[tree.length-1].size
 				}
 				return obj;
 			} else
@@ -245,8 +245,8 @@ $( document ).ready(function() {
 				obj={
 					name: tree[node].nodeid,
 					parent: tree[node].parent,
-					color: tree[node].color,
-					size: tree[node].size,
+					color: rgbToHex(tree[node].color),
+					size: 40*tree[node].size/tree[tree.length-1].size,
 					children: [jsonstring(tree[node].children[0]),jsonstring(tree[node].children[1])]
 				}
 				//var str="{'name':"+ tree[node].nodeid +", 'parent':"+tree[node].parent+", 'children': ["+jsonstring(tree[node].children[0])+", "+jsonstring(tree[node].children[1])+"]"
@@ -289,7 +289,7 @@ $( document ).ready(function() {
     		}
   		}
 
-  		root.children.forEach(collapse);
+  		//root.children.forEach(collapse);
   		update(root);
 
  		d3.select(self.frameElement).style("height", "800px");
@@ -314,8 +314,9 @@ function update(source) {
       .on("click", click);
 
   nodeEnter.append("circle")
-      .attr("r", 1e-6)
+      .attr("r", function(d){return d.size})
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
 
   nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
@@ -330,7 +331,7 @@ function update(source) {
       .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
   nodeUpdate.select("circle")
-      .attr("r", 4.5)
+      .attr("r", function(d){return d.size})
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
   nodeUpdate.select("text")
@@ -355,7 +356,7 @@ function update(source) {
   // Enter any new links at the parent's previous position.
   link.enter().insert("path", "g")
       .attr("class", "link")
-      .style("stroke",function(d){ return rgbToHex(d.target.color)})
+      .style("stroke",function(d){ return d.target.color})
       .attr("d", function(d) {
         var o = {x: source.x0, y: source.y0};
         return diagonal({source: o, target: o});
