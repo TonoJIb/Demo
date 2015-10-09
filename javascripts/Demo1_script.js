@@ -1,3 +1,14 @@
+function avgcolor(node1,node2){
+	var color1=node1.color,
+		color2=node2.color,
+		size1=node1.size,
+		size2=node2.size,
+		color=color1;
+	for (i=0; i<color1.length; i++){
+		color[i]=Math.floor((size1*color1[i]+size2*color2[i])/(size1+size2));
+	}
+	return color;
+}
 function argarrmin(arr){
 	var x=0;
 	var y=0;
@@ -79,7 +90,7 @@ $( document ).ready(function() {
 		var imgData = ctx.getImageData(0, 0, c.width, c.height);
     	// invert colors
     	var i;
-    	var k = 5;
+    	var k = 30;
     	var j;
     	var clusters=[];// = [[0, 0, 0],[0, 0, 0],[0,0,0]];
     	var div = document.getElementById("axis");
@@ -116,9 +127,9 @@ $( document ).ready(function() {
        			clusters[ix][j]=clusters[ix][j]+eps*(x[j]-clusters[ix][j]);
        		}
     	}
-var color1=rgbToHex(clusters[0]);
-var color2=rgbToHex(clusters[1]);
-var color3=rgbToHex(clusters[2]);
+//var color1=rgbToHex(clusters[0]);
+//var color2=rgbToHex(clusters[1]);
+//var color3=rgbToHex(clusters[2]);
 
     	//$("#axis").css("background", ("-webkit-linear-gradient(top,"+color1+","+color2+","+color3+")"));
     	//for (i = 0; i < k; i += 1){
@@ -176,19 +187,25 @@ var color3=rgbToHex(clusters[2]);
 		var distances=[0]; //agglomeration distances this will increase on each step by new agglomeration distance
 		var initdistmatrix=distmatrix; //make a copy of distmatrix
 		var newline=[];
-		var alpha=0.5; //algorithm parameters
+		var alpha=0.5, //algorithm parameters
+			alpha1,
+			alpha2;
 		var beta=0;
 		var gamma=0.5;
 		var undef=newline[1];
-		var tree=[]; for (i=0;i<k;i++){tree[i]={"nodeid": i,"distance":0,"children":[]}};
+		var tree=[]; for (i=0;i<k;i++){tree[i]={"nodeid": i,"distance":0,"children":[], "color":clusters[i], "size":count[i]}};
 		for (i=0; i<k-1; i++){
+			count[tree.length]=count[step.x]+count[step.y];
 			cxy=[step.x, step.y];
-			clusterind = {"nodeid":tree.length, "distance":step.mindist,"children":cxy,"parent":null};
+			clusterind = {"nodeid":tree.length, "distance":step.mindist,"children":cxy,"parent":null,"color":avgcolor(tree[step.x],tree[step.y]),"size":count[tree.length]};
 			distances.push(step.mindist);
 			tree[step.x].parent = tree.length;
 			tree[step.y].parent = tree.length;
 			tree.push(clusterind);
-			
+			alpha1=count[step.x]/(count[step.x]+count[step.y]);
+			alpha2=count[step.y]/(count[step.x]+count[step.y]);
+			beta = -(count[step.x]*count[step.y])/((count[step.x]+count[step.y])*(count[step.x]+count[step.y]));
+			gamma=0;
 			//distmatrix.correction
 			newline=[];
 			dxy = distmatrix[step.x][step.y];
@@ -198,7 +215,8 @@ var color3=rgbToHex(clusters[2]);
 				if (distmatrix[j]===undefined) 
 				{	newline.push(undef);
 					continue;}
-				newD=alpha*(distmatrix[j][step.x]+distmatrix[j][step.y])+beta*dxy+gamma*Math.abs(distmatrix[j][step.x]-distmatrix[j][step.y]);
+				
+				newD=alpha1*distmatrix[j][step.x]+alpha2*distmatrix[j][step.y]+beta*dxy+gamma*Math.abs(distmatrix[j][step.x]-distmatrix[j][step.y]);
 				distmatrix[j].push(newD);
 				newline.push(newD);
 				distmatrix[j][step.x]=undef;
@@ -217,7 +235,9 @@ var color3=rgbToHex(clusters[2]);
 			if (tree[node].children[1]===undefined) {
 				obj={
 					name: tree[node].nodeid,
-					parent: tree[node].parent
+					parent: tree[node].parent,
+					color: tree[node].color,
+					size: tree[node].size
 				}
 				return obj;
 			} else
@@ -225,6 +245,8 @@ var color3=rgbToHex(clusters[2]);
 				obj={
 					name: tree[node].nodeid,
 					parent: tree[node].parent,
+					color: tree[node].color,
+					size: tree[node].size,
 					children: [jsonstring(tree[node].children[0]),jsonstring(tree[node].children[1])]
 				}
 				//var str="{'name':"+ tree[node].nodeid +", 'parent':"+tree[node].parent+", 'children': ["+jsonstring(tree[node].children[0])+", "+jsonstring(tree[node].children[1])+"]"
@@ -279,7 +301,7 @@ function update(source) {
       links = tree.links(nodes);
 
   // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 180; });
+  nodes.forEach(function(d) { d.y = d.depth * 80; });
 
   // Update the nodes…
   var node = svg.selectAll("g.node")
