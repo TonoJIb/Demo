@@ -142,6 +142,7 @@ $( document ).ready(function() {
     		//str=[];
     		//$("#axis").append(txt);
     	//}
+    	var mask=[];
     	var count=[]; for (i=0; i<k; i++){count.push(0)};
     	for (i = 0; i < imgData.data.length; i += 4) {
     		x=[imgData.data[i],imgData.data[i+1],imgData.data[i+2]];
@@ -149,6 +150,7 @@ $( document ).ready(function() {
     		for (j=0; j<clusters.length; j++){d.push(distance(x,clusters[j]))};
        		ix=argmin(d);
        		count[ix]++;
+       		mask.push(ix);
     		imgData.data[i]=clusters[ix][0];
     		imgData.data[i+1]=clusters[ix][1];
     		imgData.data[i+2]=clusters[ix][2];
@@ -288,7 +290,7 @@ $( document ).ready(function() {
       			d.children = null;
     		}
   		}
-
+var newmask=mask;
   		root.children.forEach(collapse);
   		update(root);
 
@@ -380,12 +382,23 @@ function update(source) {
     d.y0 = d.y;
   });
 }
-
+var foresons = []
+function getchildren (d){
+	
+	if (d===undefined) return
+	foresons[foresons.length]=d.children[0].name;
+	foresons[foresons.length]=d.children[1].name;
+    getchildren(d.children[0]);
+	getchildren(d.children[1]);
+	return foresons;
+}
 // Toggle children on click.
 function click(d) {
   if (d.children) {
     d._children = d.children;
     d.children = null;
+    foresons=[];
+    foresons=getchildren(d);
   } else {
     d.children = d._children;
     d._children = null;
