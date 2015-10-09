@@ -315,7 +315,8 @@ function update(source) {
 
   nodeEnter.append("circle")
       .attr("r", function(d){return d.size})
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("stroke", function(d) { return d._children ? "#ee3333" : "#666666"; })
+      .style("fill", function(d) { return d.color; });
 
 
   nodeEnter.append("text")
@@ -332,7 +333,8 @@ function update(source) {
 
   nodeUpdate.select("circle")
       .attr("r", function(d){return d.size})
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("stroke", function(d) { return d._children ? "#ee3333" : "#666666"; })
+      .style("fill", function(d) { return d.color; });
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);
