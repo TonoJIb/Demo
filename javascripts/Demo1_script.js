@@ -1,13 +1,20 @@
+var mask; 
 function avgcolor(node1,node2){
 	var color1=node1.color,
 		color2=node2.color,
 		size1=node1.size,
 		size2=node2.size,
-		color=color1;
+		color=[0,0,0];
 	for (i=0; i<color1.length; i++){
-		color[i]=Math.floor((size1*color1[i]+size2*color2[i])/(size1+size2));
+		color[i]=((size1*color1[i]+size2*color2[i])/(size1+size2));
 	}
 	return color;
+}
+function isinarr(value,arr) {
+	for (i=0;i<arr.length;i++){
+		if (arr[i]==value) return true
+	}
+	return false;
 }
 function argarrmin(arr){
 	var x=0;
@@ -69,6 +76,14 @@ function componentToHex(c) {
 function rgbToHex(x) {
     return "#" + componentToHex(x[0]) + componentToHex(x[1]) + componentToHex(x[2]);
 }
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
 //canvas 1
 
 $( document ).ready(function() {
@@ -90,7 +105,7 @@ $( document ).ready(function() {
 		var imgData = ctx.getImageData(0, 0, c.width, c.height);
     	// invert colors
     	var i;
-    	var k = 30;
+    	var k = 50;
     	var j;
     	var clusters=[];// = [[0, 0, 0],[0, 0, 0],[0,0,0]];
     	var div = document.getElementById("axis");
@@ -115,10 +130,7 @@ $( document ).ready(function() {
  		var ix;//index of winner
  		var eps=0.1;
     	for (i = 0; i < imgData.data.length; i += 4) {
-       	 	//imgData.data[i] = 255 - imgData.data[i];
-        	//imgData.data[i+1] = 255 - imgData.data[i+1];
-        	//imgData.data[i+2] = 255 - imgData.data[i+2];
-       		//imgData.data[i+3] = 255;
+
        		x=[imgData.data[i],imgData.data[i+1],imgData.data[i+2]];
        		d=[];
     		for (j=0; j<clusters.length; j++){d.push(distance(x,clusters[j]))};
@@ -142,7 +154,10 @@ $( document ).ready(function() {
     		//str=[];
     		//$("#axis").append(txt);
     	//}
-    	var mask=[];
+    	//for (kk=0;kk<clusters.length;kk++){
+    	//	for (i=0;i<3;i++) {clusters[kk][i]=Math.floor(clusters[kk][i])}
+    	//}
+    	mask=[];
     	var count=[]; for (i=0; i<k; i++){count.push(0)};
     	for (i = 0; i < imgData.data.length; i += 4) {
     		x=[imgData.data[i],imgData.data[i+1],imgData.data[i+2]];
@@ -151,11 +166,13 @@ $( document ).ready(function() {
        		ix=argmin(d);
        		count[ix]++;
        		mask.push(ix);
+       		//if (mask[mask.length-1]>30) {console.log(ix)}
     		imgData.data[i]=clusters[ix][0];
     		imgData.data[i+1]=clusters[ix][1];
     		imgData.data[i+2]=clusters[ix][2];
     		imgData.data[i+3]=255;
     	}
+    
     	ctx1.putImageData(imgData, 0, 0);
     	for (i=0; i<count.length; i++){
     		//console.log(count[i]);
@@ -195,15 +212,15 @@ $( document ).ready(function() {
 		var beta=0;
 		var gamma=0.5;
 		var undef=newline[1];
-		var tree=[]; for (i=0;i<k;i++){tree[i]={"nodeid": i,"distance":0,"children":[], "color":clusters[i], "size":count[i]}};
+		var Itree=[]; for (i=0;i<k;i++){Itree[i]={"nodeid": i,"distance":0,"children":[], "color":clusters[i], "size":count[i]}};
 		for (i=0; i<k-1; i++){
-			count[tree.length]=count[step.x]+count[step.y];
+			count[Itree.length]=count[step.x]+count[step.y];
 			cxy=[step.x, step.y];
-			clusterind = {"nodeid":tree.length, "distance":step.mindist,"children":cxy,"parent":null,"color":avgcolor(tree[step.x],tree[step.y]),"size":count[tree.length]};
+			clusterind = {"nodeid":Itree.length, "distance":step.mindist,"children":cxy,"parent":null,"color":avgcolor(Itree[step.x],Itree[step.y]),"size":count[Itree.length]};
 			distances.push(step.mindist);
-			tree[step.x].parent = tree.length;
-			tree[step.y].parent = tree.length;
-			tree.push(clusterind);
+			Itree[step.x].parent = Itree.length;
+			Itree[step.y].parent = Itree.length;
+			Itree.push(clusterind);
 			alpha1=count[step.x]/(count[step.x]+count[step.y]);
 			alpha2=count[step.y]/(count[step.x]+count[step.y]);
 			beta = -(count[step.x]*count[step.y])/((count[step.x]+count[step.y])*(count[step.x]+count[step.y]));
@@ -233,28 +250,39 @@ $( document ).ready(function() {
 		// forming json
 		var jsontree;
 		var obj;
+		var getchildren=function(d) {
+    		if (Itree[d].children===null) return []
+    		if (Itree[d].children[1]===undefined) return []
+    		var foresons=[];
+			foresons=foresons.concat(Itree[d].children[0]);
+			foresons=foresons.concat(Itree[d].children[1]);
+    		foresons=foresons.concat(getchildren(Itree[d].children[0]));
+			foresons=foresons.concat(getchildren(Itree[d].children[1]));
+			return foresons;
+		}
 		var jsonstring= function(node){
-			if (tree[node].children[1]===undefined) {
+			if (Itree[node].children[1]===undefined) {
 				obj={
-					name: tree[node].nodeid,
-					parent: tree[node].parent,
-					color: tree[node].color,
-					size: tree[node].size
+					name: Itree[node].nodeid,
+					parent: Itree[node].parent,
+					color: Itree[node].color,
+					size: 40*Itree[node].size/Itree[Itree.length-1].size
 				}
 				return obj;
 			} else
 			{
 				obj={
-					name: tree[node].nodeid,
-					parent: tree[node].parent,
-					color: tree[node].color,
-					size: tree[node].size,
-					children: [jsonstring(tree[node].children[0]),jsonstring(tree[node].children[1])]
+					name: Itree[node].nodeid,
+					parent: Itree[node].parent,
+					color: Itree[node].color,
+					size: 40*Itree[node].size/Itree[Itree.length-1].size,
+					children: [jsonstring(Itree[node].children[0]),jsonstring(Itree[node].children[1])],
+					allchildren: getchildren(Itree[node].nodeid)
 				}
 				//var str="{'name':"+ tree[node].nodeid +", 'parent':"+tree[node].parent+", 'children': ["+jsonstring(tree[node].children[0])+", "+jsonstring(tree[node].children[1])+"]"
 			return obj};
 		}
-		jsontree=jsonstring(tree.length-1);
+		jsontree=jsonstring(Itree.length-1);
 
 		// a tree
 		var margin = {top: 20, right: 120, bottom: 20, left: 120},
@@ -279,6 +307,7 @@ $( document ).ready(function() {
     							   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
+
   		root = jsontree;
   		root.x0 = height / 2;
   		root.y0 = 0;
@@ -290,8 +319,13 @@ $( document ).ready(function() {
       			d.children = null;
     		}
   		}
-var newmask=mask;
-  		root.children.forEach(collapse);
+
+
+
+
+
+  		//root.children.forEach(collapse);
+
   		update(root);
 
  		d3.select(self.frameElement).style("height", "800px");
@@ -316,8 +350,10 @@ function update(source) {
       .on("click", click);
 
   nodeEnter.append("circle")
-      .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .attr("r", function(d){return d.size})
+      .style("stroke", function(d) { return d._children ? "#ee3333" : "#666666"; })
+      .style("fill", function(d) { return rgbToHex(d.color); });
+
 
   nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
@@ -332,8 +368,9 @@ function update(source) {
       .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
   nodeUpdate.select("circle")
-      .attr("r", 4.5)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .attr("r", function(d){return d.size})
+      .style("stroke", function(d) { return d._children ? "#ee3333" : "#666666"; })
+      .style("fill", function(d) { return rgbToHex(d.color); });
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);
@@ -357,6 +394,7 @@ function update(source) {
   // Enter any new links at the parent's previous position.
   link.enter().insert("path", "g")
       .attr("class", "link")
+      .style("stroke",function(d){ return rgbToHex(d.target.color)})
       .attr("d", function(d) {
         var o = {x: source.x0, y: source.y0};
         return diagonal({source: o, target: o});
@@ -382,28 +420,68 @@ function update(source) {
     d.y0 = d.y;
   });
 }
-var foresons = []
-function getchildren (d){
-	
-	if (d===undefined) return
-	foresons[foresons.length]=d.children[0].name;
-	foresons[foresons.length]=d.children[1].name;
-    getchildren(d.children[0]);
-	getchildren(d.children[1]);
-	return foresons;
-}
+var foresons = [];
+var curmask=[];
+for (i=0;i<mask.length;i++){curmask.push(mask[i]);}
 // Toggle children on click.
 function click(d) {
-  if (d.children) {
-    d._children = d.children;
+
+    var canvas = document.getElementById("DestCanvas");
+    var ctx = canvas.getContext("2d");
+    var imgData = ctx.getImageData(0, 0, c.width, c.height);
+  	if (d.children) {
+	var col = d.color;
+    	for (var i = 0; i < mask.length; i++) {
+    	d.allchildren.forEach(function(id){
+    	    	
+            if(mask[i]==id) {
+        	imgData.data[4*i] = col[0];
+        	imgData.data[4*i+1] = col[1];
+        	imgData.data[4*i+2] = col[2];
+       		imgData.data[4*i+3] = 255;
+       		curmask[i]=d.name;
+        } 
+    })
+
+    }; //forEach
+
+	d._children = d.children;
     d.children = null;
-    foresons=[];
-    foresons=getchildren(d);
+    
   } else {
+    
     d.children = d._children;
     d._children = null;
+    for (var i = 0; i < mask.length; i++) {
+    if (curmask[i]==d.name){
+    	var findnewcolor=function(d1) {
+    		var newcolor;
+    		if (d1.children===null) return {"name":d1.name, "color":(d1.color)}
+    		if (d1.children===undefined) return {"name":d1.name, "color":(d1.color)}
+    		if (d1.allchildren.length==2){
+    			if (mask[i]==d1.children[0].name) return {"name":d1.children[0].name, "color":(d1.children[0].color)};
+    			if (mask[i]==d1.children[1].name) return {"name":d1.children[1].name, "color":(d1.children[1].color)};
+    		}
+    		if (isinarr(mask[i],d1.children[0].allchildren)){
+    			newcolor = findnewcolor(d1.children[0]);
+    		} else {newcolor = findnewcolor(d1.children[1]); }
+    	
+    		return newcolor;	
+    	}
+    	var nc=findnewcolor(d);
+    	curmask[i]= nc.name;
+    	imgData.data[4*i] = nc.color[0];
+        imgData.data[4*i+1] = nc.color[1];
+        imgData.data[4*i+2] = nc.color[2];
+       	imgData.data[4*i+3] = 255;
+
+    } 
+    		
+	}
+
   }
   update(d);
+  ctx.putImageData(imgData, 0, 0);
 }
 
 	}//end onload;
